@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ch Aarush Udbhav - Portfolio</title>
+    
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-deep: #000000;
+            --bg-card: rgba(15, 15, 15, 0.95);
+            --text-primary: #ffffff;
+            --text-secondary: #e0e0e0;
+            --accent-fire: #ff8c00;
+            --accent-gold: #ffb700;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scrollbar-width: none; /* Firefox */
+        }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            -ms-overflow-style: none; /* IE/Edge */
+        }
+        body::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
+
+        /* --- 3D BACKGROUNDS --- */
+        #canvas-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -2; background: #000;
+        }
+        #space-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; pointer-events: none; 
+            opacity: 1.0;
+        }
+
+        /* --- LOADER --- */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            flex-direction: column; transition: opacity 0.8s ease;
+        }
+        .spinner {
+            width: 50px; height: 50px; border: 2px solid rgba(255, 140, 0, 0.2);
+            border-top: 2px solid var(--accent-fire); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .loader-text { color: var(--accent-fire); margin-top: 20px; font-family: monospace; letter-spacing: 2px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- UI COMPONENTS --- */
+        .navbar {
+            position: fixed; top: 0; width: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.95), transparent);
+            z-index: 1000; padding: 1.5rem 0;
+        }
+        .nav-container {
+            max-width: 1200px; margin: 0 auto; padding: 0 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo { font-size: 1.5rem; font-weight: 700; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+        .logo i { color: var(--accent-fire); }
+        .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+        .nav-links a { color: #ccc; text-decoration: none; font-weight: 400; transition: 0.3s; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;}
+        .nav-links a:hover { color: var(--accent-gold); text-shadow: 0 0 10px var(--accent-fire); }
+        .hamburger { display: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+
+        .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .hero-content { z-index: 2; max-width: 900px; padding: 20px; margin-top: -100px; }
+        
+        #typewriter {
+            font-size: 4rem; font-weight: 700; margin-bottom: 1rem;
+            background: linear-gradient(90deg, #fff, var(--accent-gold));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            min-height: 80px; text-shadow: 0 0 50px rgba(255, 140, 0, 0.2);
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.8));
+        }
+        
+        .btn {
+            padding: 14px 40px; border-radius: 50px; text-decoration: none; font-weight: 600;
+            color: #fff; border: 1px solid var(--accent-fire);
+            background: rgba(255, 140, 0, 0.1); transition: 0.4s;
+            display: inline-flex; align-items: center; gap: 10px; margin: 10px;
+            backdrop-filter: blur(5px);
+            cursor: pointer;
+        }
+        .btn:hover { background: var(--accent-fire); color: #000; box-shadow: 0 0 40px var(--accent-fire); transform: translateY(-3px); }
+
+        /* FIX 1: Dedicated Outline Class */
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #fff;
+        }
+        .btn-outline:hover {
+            background: var(--accent-fire);
+            border-color: var(--accent-fire);
+            color: #000;
+        }
+
+        .section { padding: 120px 0; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .section-title { text-align: center; margin-bottom: 80px; }
+        .section-title h2 { font-size: 3rem; color: #fff; margin-bottom: 15px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
+        .section-title h2::after {
+            content: ''; display: block; width: 60px; height: 3px;
+            background: var(--accent-fire); margin: 20px auto;
+        }
+
+        .card {
+            background: var(--bg-card); border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 40px; border-radius: 16px; transition: 0.4s ease;
+            display: flex; flex-direction: column; backdrop-filter: blur(10px);
+            align-items: center; text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            height: 100%; /* This is good for grids, but we override it for contact boxes */
+            overflow: hidden; 
+        }
+        .card h3 { color: #fff; text-shadow: 0 1px 5px rgba(0,0,0,0.9); }
+        .card p { 
+            color: var(--text-secondary);
+            /* Important: Prevents long emails from breaking layout */
+            word-break: break-all; 
+            overflow-wrap: anywhere;
+        }
+
+        .card:hover {
+            transform: translateY(-10px); border-color: var(--accent-fire);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+        }
+        
+        .project-card { 
+            align-items: flex-start; 
+            text-align: left; 
+        }
+        
+        .project-card .btn {
+            margin-top: auto; 
+            width: 100%;
+            justify-content: center;
+        }
+
+        .skill-icon {
+            font-size: 3.5rem; margin-bottom: 20px; color: #aaa;
+            transition: transform 0.4s ease, color 0.4s; transform-origin: center; display: inline-block;
+        }
+        .card:hover .skill-icon { transform: scale(1.2); color: var(--accent-gold); }
+
+        .about-content { display: grid; grid-template-columns: 1fr 2fr; gap: 60px; align-items: center; }
+        .about-image img {
+            width: 100%; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 0 50px rgba(255, 140, 0, 0.1);
+        }
+
+        .experience-timeline { position: relative; max-width: 800px; margin: 0 auto; }
+        .timeline-item {
+            margin-bottom: 5rem; padding-left: 3rem; border-left: 2px solid var(--accent-fire); position: relative;
+            text-align: left; align-items: flex-start;
+        }
+        .timeline-item::before {
+            content: ''; position: absolute; left: -6px; top: 8px; width: 10px; height: 10px;
+            background: #000; border: 2px solid var(--accent-gold);
+            border-radius: 50%; box-shadow: 0 0 15px var(--accent-fire);
+        }
+
+        .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 40px; }
+        .skills-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 30px; }
+        .cert-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; }
+        .cert-link { color: var(--accent-gold); font-weight: bold; text-decoration: none; margin-top: 15px; display: block; letter-spacing: 1px; }
+
+        /* --- UPDATED CONTACT SECTION LAYOUT --- */
+        .contact-content { 
+            display: grid; 
+            /* FIX 2: Reduced min-width to 250px prevents mobile overflow */
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 60px; 
+            width: 100%;
+        }
+        
+        input, textarea {
+            width: 100%; padding: 18px; margin-bottom: 25px;
+            background: rgba(255,255,255,0.03); border: 1px solid #555; color: #fff; border-radius: 8px;
+            font-family: inherit; font-size: 1rem;
+        }
+        input:focus, textarea:focus { outline: none; border-color: var(--accent-fire); background: rgba(255,255,255,0.05); }
+
+        .big-social-btn {
+            display: flex; align-items: center; justify-content: center; gap: 15px;
+            width: 100%; padding: 22px; margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.03); border: 1px solid var(--accent-fire);
+            color: white; text-decoration: none; border-radius: 12px; font-size: 1.2rem; font-weight: bold;
+            transition: 0.4s;
+        }
+        .big-social-btn:hover { background: var(--accent-fire); color: black; box-shadow: 0 0 40px rgba(255, 140, 0, 0.3); }
+
+        #form-message {
+            margin-top: 15px; font-weight: bold; display: none; text-align: center;
+        }
+        .success-msg { color: #4ade80; }
+        .error-msg { color: #ef4444; }
+
+        .footer { text-align: center; padding: 60px 0; color: #777; border-top: 1px solid #111; margin-top: 80px; }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); z-index: 2000;
+            display: none; justify-content: center; align-items: center;
+        }
+        .modal-overlay.visible { display: flex; opacity: 1; }
+        .modal-content img { max-width: 90%; max-height: 90vh; border-radius: 12px; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .modal-close { position: absolute; top: 30px; right: 40px; font-size: 3rem; color: #fff; cursor: pointer; transition: 0.3s; }
+        .modal-close:hover { color: var(--accent-fire); }
+
+        .skill-tag { background: rgba(255,255,255,0.08); padding: 5px 12px; border-radius: 5px; font-size: 0.85rem; margin-right: 8px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 8px; display: inline-block; }
+        .tech-stack { margin-top: 15px; margin-bottom: 20px; }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .about-content { grid-template-columns: 1fr; }
+            .hamburger { display: block; }
+            #typewriter { font-size: 2.5rem; }
+        }
+
+        /* FIX 3: Force single column on smaller screens for contact area specifically */
+        @media (max-width: 900px) {
+            .contact-content { grid-template-columns: 1fr; gap: 40px; } 
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="spinner"></div>
+        <div class="loader-text">Summoning Singularity...</div>
+        <div class="loader-text" style="font-size: 0.9rem; color: #fff;">Optimizing 4K Assets</div>
+        <div style="color: #666; font-size: 0.8rem; margin-top: 10px;">(Use Live Server)</div>
+    </div>
+
+    <div id="canvas-container"></div>
+    <canvas id="space-canvas"></canvas>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#home" class="logo"><i class="fas fa-meteor"></i> Ch Aarush Udbhav</a>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#experience">Experience</a></li>
+                <li><a href="#projects">Projects</a></li>
+                <li><a href="#skills">Skills</a></li>
+                <li><a href="#certifications">Certifications</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="hamburger"><i class="fas fa-bars"></i></div>
+        </div>
+    </nav>
+
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1 id="typewriter"></h1>
+            <p style="font-size: 1.4rem; color: var(--text-secondary); margin-bottom: 40px; letter-spacing: 1px; text-shadow: 0 2px 5px rgba(0,0,0,0.8);">AI & ML Undergraduate | Software Engineer | Problem Solver</p>
+            <div class="fade-in">
+                <a href="#projects" class="btn"><i class="fas fa-code"></i> Explore Work</a>
+                <a href="#contact" class="btn btn-outline"><i class="fas fa-envelope"></i> Hire Me</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="section">
+        <div class="container">
+            <div class="section-title fade-in"><h2>About Me</h2></div>
+            <div class="about-content">
+                <div class="about-image fade-in"><img src="images/profile.jpg" alt="Ch Aarush Udbhav" onerror="this.src='https://via.placeholder.com/350x450/111/fff?text=No+Image'"></div>
+                
+                <div class="about-text fade-in" style="text-align: left; background: rgba(15, 15, 15, 0.85); padding: 40px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                    <h3>Hello! I'm Ch Aarush Udbhav</h3>
+                    <p style="font-size: 1.1rem; line-height: 1.8; margin-bottom: 20px;">I am an AI & ML undergraduate with practical experience in building machine learning models, full-stack systems, and AI-driven applications.</p>
+                    <p style="font-size: 1.1rem; line-height: 1.8;">Currently based in Hyderabad, India, I am passionate about solving real-world problems through code, whether it's creating intelligent excuse generators or optimizing user segmentation for advertising.</p>
+                    <div style="margin-top: 3rem; display: flex; gap: 50px;">
+                        <div class="stat-item"><span style="font-size: 3rem; font-weight: 700; color: var(--accent-fire);">2+</span><br><span style="color:var(--text-secondary);">Internships</span></div>
+                        <div class="stat-item"><span style="font-size: 3rem; font-weight: 700; color: var(--accent-fire);">6+</span><br><span style="color:var(--text-secondary);">Major Projects</span></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="experience" class="section">
+        <div class="container">
+            <div class="section-title fade-in"><h2>Experience</h2></div>
+            <div class="experience-timeline">
+                <div class="card timeline-item fade-in">
+                    <h3 style="font-size: 1.5rem;">Software Development Intern (AIML)</h3>
+                    <span style="color:var(--accent-fire); font-weight:bold; font-size: 1.1rem;">BharatVersity (Codemania EduTech)</span>
+                    <span style="display:block; margin:10px 0; color:#aaa;">Jun 2025 - Jul 2025</span>
+                    <p>Contributed to AI/ML-driven software development, implementing models for real-world applications and collaborating with mentors to enhance product features.</p>
+                </div>
+                <div class="card timeline-item fade-in">
+                    <h3 style="font-size: 1.5rem;">AI Intern</h3>
+                    <span style="color:var(--accent-fire); font-weight:bold; font-size: 1.1rem;">LaunchED Global</span>
+                    <span style="display:block; margin:10px 0; color:#aaa;">Mar 2025 - Jul 2025</span>
+                    <p>Focused on model building, testing, and deployment workflows. Gained hands-on exposure to end-to-end AI workflows including data preprocessing and feature engineering.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="projects" class="section">
+        <div class="container">
+            <div class="section-title fade-in"><h2>Featured Projects</h2></div>
+            <div class="projects-grid">
+                <div class="card project-card fade-in">
+                    <h3>Intelligent Excuse Generator</h3><p>AI-driven excuse generator with multi-language support.</p>
+                    <div class="tech-stack"><span class="skill-tag">FastAPI</span><span class="skill-tag">OpenAI</span></div>
+                    <a href="https://github.com/AarushCh/Intelligent-Excuse-Generator" target="_blank" class="btn">View Code</a>
+                </div>
+                <div class="card project-card fade-in">
+                    <h3>User Segmentation AI</h3><p>KMeans Clustering and PCA for user profiling.</p>
+                    <div class="tech-stack"><span class="skill-tag">Python</span><span class="skill-tag">Scikit-learn</span></div>
+                    <a href="https://github.com/AarushCh/User-Profiling-And-Segmentation" target="_blank" class="btn">View Code</a>
+                </div>
+                <div class="card project-card fade-in">
+                    <h3>Online Exam Interface</h3><p>Secure Java-based exam platform.</p>
+                    <div class="tech-stack"><span class="skill-tag">Java</span><span class="skill-tag">Swing</span></div>
+                    <a href="https://github.com/AarushCh/Online-Examination-Interface" target="_blank" class="btn">View Code</a>
+                </div>
+                <div class="card project-card fade-in">
+                    <h3>Online Reservation System</h3><p>Digital reservation system for booking and cancellations.</p>
+                    <div class="tech-stack"><span class="skill-tag">Java</span><span class="skill-tag">OOP</span></div>
+                    <a href="https://github.com/AarushCh/Online-Reservation-System" target="_blank" class="btn">View Code</a>
+                </div>
+                <div class="card project-card fade-in">
+                    <h3>ATM Interface</h3><p>Simulation of banking transactions like withdrawals.</p>
+                    <div class="tech-stack"><span class="skill-tag">Java</span><span class="skill-tag">Console</span></div>
+                    <a href="https://github.com/AarushCh/ATM-Interface" target="_blank" class="btn">View Code</a>
+                </div>
+                <div class="card project-card fade-in">
+                    <h3>Number Guessing Game</h3><p>Interactive guessing game logic.</p>
+                    <div class="tech-stack"><span class="skill-tag">Java</span><span class="skill-tag">Logic</span></div>
+                    <a href="https://github.com/AarushCh/Number-Guessing-Game" target="_blank" class="btn">View Code</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="skills" class="section">
+        <div class="container">
+            <div class="section-title fade-in"><h2>Technical Arsenal</h2></div>
+            <div class="skills-container">
+                <div class="card skill-category fade-in"><div class="skill-icon"><i class="fab fa-python"></i></div><h3>Python</h3></div>
+                <div class="card skill-category fade-in"><div class="skill-icon"><i class="fab fa-java"></i></div><h3>Java</h3></div>
+                <div class="card skill-category fade-in"><div class="skill-icon"><i class="fas fa-brain"></i></div><h3>AI / ML</h3></div>
+                <div class="card skill-category fade-in"><div class="skill-icon"><i class="fas fa-network-wired"></i></div><h3>TensorFlow</h3></div>
+                <div class="card skill-category fade-in"><div class="skill-icon"><i class="fab fa-react"></i></div><h3>React.js</h3></div>
+                <div class="card skill-category fade-in"><div class="skill-icon"><i class="fas fa-server"></i></div><h3>FastAPI</h3></div>
+                <div class="card skill-category fade-in"><div class="skill-icon"><i class="fas fa-database"></i></div><h3>SQL</h3></div>
+                <div class="card skill-category fade-in"><div class="skill-icon"><i class="fab fa-git-alt"></i></div><h3>Git / GitHub</h3></div>
+                <div class="card skill-category fade-in"><div class="skill-icon"><i class="fas fa-code"></i></div><h3>C / C++</h3></div>
+                <div class="card skill-category fade-in"><div class="skill-icon"><i class="fas fa-chart-line"></i></div><h3>Pandas/NumPy</h3></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="certifications" class="section">
+        <div class="container">
+            <div class="section-title fade-in"><h2>Certifications</h2></div>
+            <div class="cert-grid">
+                
+                <div class="card fade-in">
+                    <div style="font-size: 2.5rem; color: var(--accent-fire); margin-bottom: 15px;"><i class="fas fa-certificate"></i></div>
+                    <h3>AI Internship</h3>
+                    <p>LaunchED Global</p>
+                    <a href="#" class="cert-link open-modal" data-cert-image="images/cert-launched.jpg">
+                        View Certificate <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+
+                <div class="card fade-in">
+                    <div style="font-size: 2.5rem; color: var(--accent-fire); margin-bottom: 15px;"><i class="fas fa-award"></i></div>
+                    <h3>Java Development Internship</h3>
+                    <p>AICTE / Oasis Infobyte</p>
+                    <a href="#" class="cert-link open-modal" data-cert-image="images/cert-oasis.jpg">
+                        View Certificate <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+
+                <div class="card fade-in">
+                    <div style="font-size: 2.5rem; color: var(--accent-fire); margin-bottom: 15px;"><i class="fas fa-trophy"></i></div>
+                    <h3>Smart India Hackathon 2024</h3>
+                    <p>Internal Hackathon - GITAM</p>
+                    <a href="#" class="cert-link open-modal" data-cert-image="images/cert-sih.jpg">
+                        View Certificate <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+
+                <div class="card fade-in">
+                    <div style="font-size: 2.5rem; color: var(--accent-fire); margin-bottom: 15px;"><i class="fas fa-university"></i></div>
+                    <h3>AI-ML Internship</h3>
+                    <p>BharatVersity</p>
+                    <a href="#" class="cert-link open-modal" data-cert-image="images/cert-bharat.jpg">
+                        View Certificate <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+
+                <div class="card fade-in">
+                    <div style="font-size: 2.5rem; color: var(--accent-fire); margin-bottom: 15px;"><i class="fas fa-chart-line"></i></div>
+                    <h3>Data Analytics Job Simulation</h3>
+                    <p>Deloitte</p>
+                    <a href="#" class="cert-link open-modal" data-cert-image="images/cert-deloitte-data.jpg">
+                        View Certificate <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+
+                <div class="card fade-in">
+                    <div style="font-size: 2.5rem; color: var(--accent-fire); margin-bottom: 15px;"><i class="fas fa-laptop-code"></i></div>
+                    <h3>Technology Job Simulation</h3>
+                    <p>Deloitte</p>
+                    <a href="#" class="cert-link open-modal" data-cert-image="images/cert-deloitte-tech.jpg">
+                        View Certificate <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="section">
+        <div class="container">
+            <div class="section-title fade-in"><h2>Contact</h2></div>
+            <div class="contact-content">
+                
+                <form id="contactForm" class="card">
+                    <input type="hidden" name="access_key" value="729dbca5-4c84-441d-84b0-c0ae541620e1">
+                    
+                    <input type="text" name="name" required placeholder="Name">
+                    <input type="email" name="email" required placeholder="Email">
+                    <textarea name="message" rows="5" required placeholder="Message"></textarea>
+                    
+                    <button type="submit" id="submitBtn" class="btn" style="width:100%;">Send Message</button>
+                    <div id="form-message"></div>
+                </form>
+
+                <div>
+                    <div class="card" style="margin-bottom: 2rem; align-items: flex-start; text-align: left; height: auto;">
+                        <h3><i class="fas fa-map-marker-alt" style="color:var(--accent-fire); margin-right:15px;"></i> Location</h3>
+                        <p style="color: var(--text-secondary); font-size: 1.1rem;">Hyderabad, India</p>
+                    </div>
+
+                    <div class="card" style="margin-bottom: 2rem; align-items: flex-start; text-align: left; height: auto;">
+                        <h3><i class="fas fa-envelope" style="color:var(--accent-fire); margin-right:15px;"></i> Email</h3>
+                        <p><a href="https://mail.google.com/mail/u/1/#inbox?compose=VpCqJKjnRpwlPkQfPzsCGCfNjCDJwdVpBsXPnWMwMbJBRGScZxhHwcsLzGSKgwNJhgbPrFq" style="color: var(--text-secondary); text-decoration: none; font-size: 1.1rem;">aarushch666@gmail.com</a></p>
+                    </div>
+                    <div class="social-btn-container" style="display:flex; flex-direction:column; gap:20px;">
+                        <a href="https://github.com/AarushCh" target="_blank" class="big-social-btn">
+                            <i class="fab fa-github" style="font-size:2rem;"></i> Visit GitHub Profile
+                        </a>
+                        <a href="https://linkedin.com/in/ch-aarush-udbhav-a-u-c-3415b1302/" target="_blank" class="big-social-btn">
+                            <i class="fab fa-linkedin-in" style="font-size:2rem;"></i> Connect on LinkedIn
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer"><p>&copy; 2025 Ch Aarush Udbhav. Built with AI & Creativity.</p></footer>
+
+    <div id="certificateModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <img id="modalImage" src="" alt="Certificate">
+        </div>
+    </div>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+        // --- 1. 3D SCENE SETUP ---
+        const container = document.getElementById('canvas-container');
+        const loaderDiv = document.getElementById('loader');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x000000, 0.001);
+
+        const camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.1, 20000); 
+        camera.position.z = 20;
+        camera.position.y = 8;
+        camera.position.x = 5;
+
+        // UPDATED RENDERER SETTINGS FOR 4K QUALITY & FIXING CHOPPED GEOMETRY
+        const renderer = new THREE.WebGLRenderer({ 
+            alpha: true, 
+            antialias: true,
+            powerPreference: "high-performance",
+            precision: "highp",
+            logarithmicDepthBuffer: true // FIXES "CHOPPED" Z-FIGHTING
+        });
+        
+        // FIX FOR "LOW RES" LOOK (Enables Full Device Resolution)
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        
+        renderer.outputColorSpace = THREE.SRGBColorSpace; 
+        renderer.toneMapping = THREE.ACESFilmicToneMapping; 
+        container.appendChild(renderer.domElement);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xff8c00, 3.5);
+        dirLight.position.set(10, 10, 10);
+        scene.add(dirLight);
+
+        let blackHole;
+        const loader = new GLTFLoader();
+
+        loader.load('./castle_of_loarre.glb', (gltf) => {
+            blackHole = gltf.scene;
+            
+            // Texture Optimization
+            const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+            blackHole.traverse((child) => {
+                if (child.isMesh) {
+                    const material = child.material;
+                    const sharpen = (map) => {
+                        if (map) {
+                            map.anisotropy = maxAnisotropy;
+                            map.minFilter = THREE.LinearMipmapLinearFilter;
+                            map.magFilter = THREE.LinearFilter;
+                            map.needsUpdate = true;
+                        }
+                    };
+                    if (material) {
+                        sharpen(material.map);
+                        sharpen(material.normalMap);
+                        sharpen(material.roughnessMap);
+                        sharpen(material.metalnessMap);
+                        sharpen(material.aoMap);
+                        sharpen(material.emissiveMap);
+                        material.needsUpdate = true;
+                    }
+                }
+            });
+
+            scene.add(blackHole);
+            const box = new THREE.Box3().setFromObject(blackHole);
+            const center = box.getCenter(new THREE.Vector3());
+            blackHole.position.sub(center);
+            
+            // ADJUSTED POSITION: Raises the castle so it is visible
+            blackHole.position.x = 5;  // Center horizontally
+            blackHole.position.y = -4; // Raised from 5 to -4 to be visible
+            
+            const size = box.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            if (maxDim > 0) {
+                const scale = 45 / maxDim;
+                blackHole.scale.set(scale, scale, scale);
+            }
+            blackHole.rotation.x = 0;
+            blackHole.rotation.y = 0;
+
+            loaderDiv.style.opacity = 0;
+            setTimeout(() => { loaderDiv.style.display = 'none'; }, 500);
+        }, undefined, (error) => {
+            console.error('Error loading GLB:', error);
+            const geometry = new THREE.TorusGeometry(12, 3, 16, 100);
+            const material = new THREE.MeshBasicMaterial({ color: 0xff9d00, wireframe: true });
+            blackHole = new THREE.Mesh(geometry, material);
+            blackHole.rotation.x = 1.6;
+            scene.add(blackHole);
+            loaderDiv.style.display = 'none';
+        });
+
+        const clock = new THREE.Clock();
+        function animate3D() {
+            requestAnimationFrame(animate3D);
+            const time = clock.getElapsedTime();
+            const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollFraction = Math.min(window.scrollY / maxScroll, 1);
+            const targetZ = 20 - (scrollFraction * 3);
+            camera.position.z += (targetZ - camera.position.z) * 0.05;
+
+            if (blackHole) {
+                blackHole.rotation.y += 0.0015;
+                // Updated Y position logic
+                blackHole.position.y = Math.sin(time * 0.4) * 0.7 - 4; 
+            }
+            renderer.render(scene, camera);
+        }
+        animate3D();
+
+        const cvs = document.getElementById('space-canvas');
+        const ctx = cvs.getContext('2d');
+        let w, h, particles = [];
+        const mouse = { x: -1000, y: -1000 };
+        window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+        function resize() {
+            w = cvs.width = window.innerWidth;
+            h = cvs.height = window.innerHeight;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+            particles = [];
+            let count = (w * h) / 8000;
+            for(let i=0; i<count; i++) particles.push({
+                x: Math.random()*w, y: Math.random()*h,
+                vx: (Math.random()-0.5)*0.2, vy: (Math.random()-0.5)*0.2, 
+                size: Math.random()*2,
+                // UPDATED: Added phase for twinkling effect
+                phase: Math.random() * Math.PI * 2,
+                speed: 0.02 + Math.random() * 0.05 
+            });
+        }
+        
+        function animateStars() {
+            ctx.clearRect(0,0,w,h);
+            particles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if(p.x<0) p.x=w; if(p.x>w) p.x=0; if(p.y<0) p.y=h; if(p.y>h) p.y=0;
+                
+                // UPDATED: Sparkle/Twinkle Logic
+                p.phase += p.speed;
+                // Alpha oscillates between 0.3 and 1.0
+                const alpha = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(p.phase));
+
+                ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, 6.28); ctx.fill();
+                
+                particles.forEach(p2 => {
+                    let dx = p.x - p2.x, dy = p.y - p2.y;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        // Lines also twinkle slightly with the particle alpha
+                        ctx.strokeStyle = `rgba(255, 140, 0, ${0.8 * (1 - dist/120) * alpha})`; 
+                        ctx.lineWidth = 0.8; 
+                        ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+                    }
+                });
+                let dx = mouse.x - p.x, dy = mouse.y - p.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                if(dist < 150) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${1 - dist/150})`; 
+                    ctx.lineWidth = 1.0;
+                    ctx.moveTo(p.x, p.y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke();
+                }
+            });
+            requestAnimationFrame(animateStars);
+        }
+        window.addEventListener('resize', resize);
+        resize(); animateStars();
+
+        const typeEl = document.getElementById('typewriter');
+        const words = ["Ch Aarush Udbhav", "AI & ML Engineer", "Software Developer"];
+        let wIdx=0, cIdx=0, del=false;
+        function type() {
+            const cur=words[wIdx];
+            typeEl.innerHTML = (del?cur.substring(0,cIdx--):cur.substring(0,cIdx++))+'|';
+            if(!del&&cIdx===cur.length+1){del=true;setTimeout(type,2000);}
+            else if(del&&cIdx===-1){del=false;wIdx=(wIdx+1)%words.length;setTimeout(type,500);}
+            else setTimeout(type,del?75:150);
+        }
+        type();
+
+        const modal = document.getElementById('certificateModal');
+        const mImg = document.getElementById('modalImage');
+        const cls = document.querySelector('.modal-close');
+        document.querySelectorAll('.open-modal').forEach(l => l.onclick = e => {
+            e.preventDefault(); mImg.src = l.getAttribute('data-cert-image'); modal.classList.add('visible');
+        });
+        cls.onclick = () => modal.classList.remove('visible');
+        modal.onclick = e => { if(e.target===modal) modal.classList.remove('visible'); };
+
+        const burger = document.querySelector('.hamburger');
+        const nav = document.querySelector('.nav-links');
+        burger.onclick = () => {
+            if(nav.style.display==='flex') nav.style.display='none';
+            else {
+                nav.style.display='flex'; nav.style.flexDirection='column';
+                nav.style.position='absolute'; nav.style.top='70px'; nav.style.right='0';
+                nav.style.background='rgba(0,0,0,0.95)'; nav.style.width='100%'; nav.style.padding='20px';
+            }
+        };
+
+        const obs = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('visible'); }));
+        document.querySelectorAll('.fade-in').forEach(e => obs.observe(e));
+
+        // --- CONTACT FORM LOGIC (AJAX) ---
+        const form = document.getElementById('contactForm');
+        const result = document.getElementById('form-message');
+        const btn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const object = Object.fromEntries(formData);
+            const json = JSON.stringify(object);
+
+            result.innerHTML = "Sending...";
+            result.style.display = "block";
+            result.className = ""; 
+            btn.disabled = true;
+
+            fetch('https://api.web3forms.com/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: json
+            })
+            .then(async (response) => {
+                let json = await response.json();
+                if (response.status == 200) {
+                    result.innerHTML = "Message Sent Successfully! 🚀";
+                    result.classList.add('success-msg');
+                    form.reset();
+                } else {
+                    console.log(response);
+                    result.innerHTML = json.message;
+                    result.classList.add('error-msg');
+                }
+            })
+            .catch(error => {
+                console.log(error);
+                result.innerHTML = "Something went wrong!";
+                result.classList.add('error-msg');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                setTimeout(() => {
+                    result.style.display = "none";
+                }, 5000);
+            });
+        });
+    </script>
+</body>
+</html>

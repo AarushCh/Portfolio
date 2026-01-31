@@ -57,10 +57,11 @@ This project is hosted using **GitHub Pages**. You can visit it live at:
 ## 📬 Contact
 
 📧 aarushch666@gmail.com  
-🔗 [LinkedIn](https://www.linkedin.com/in/ch-aarush-udbhav-a-u-c-3415b1302/)  
-🎮 [YouTube - Dodo XP](https://www.youtube.com/@auc_ae)  
+🔗 [LinkedIn](https://www.linkedin.com/in/ch-aarush-udbhav/)  
+🎮 [YouTube - A.U.C](https://www.youtube.com/@auc_ae)  
 🐙 [GitHub](https://github.com/AarushCh)
 
 ---
 
 > © 2025 Ch Aarush Udbhav. All rights reserved.
+

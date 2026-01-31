@@ -851,6 +851,7 @@
                     <input type="email" name="email" required placeholder="Email">
                     <textarea name="message" rows="5" required placeholder="Message"></textarea>
 
+                    <div class="h-captcha" data-captcha="true"></div>
                     <button type="submit" id="submitBtn" class="btn" style="width:100%;">Send Message</button>
                     <div id="form-message"></div>
                 </form>
@@ -1121,6 +1122,16 @@
         form.addEventListener('submit', function (e) {
             e.preventDefault();
             const formData = new FormData(form);
+
+            const hCaptchaResponse = formData.get('h-captcha-response');
+            if (!hCaptchaResponse) {
+                result.innerHTML = "Please complete the captcha!";
+                result.style.display = "block";
+                result.className = "error-msg";
+                setTimeout(() => { result.style.display = "none"; }, 3000);
+                return;
+            }
+
             const object = Object.fromEntries(formData);
             const json = JSON.stringify(object);
 
@@ -1162,6 +1173,7 @@
                 });
         });
     </script>
+    <script src="https://web3forms.com/client/script.js" async defer></script>
 </body>
 
 </html>

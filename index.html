@@ -119,65 +119,211 @@
             }
         }
 
-        /* --- UI COMPONENTS --- */
+        /* --- NAVBAR --- */
         .navbar {
             position: fixed;
-            top: 0;
-            width: 100%;
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.95), transparent);
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 1200px;
+            background: rgba(10, 10, 10, 0.6);
+            backdrop-filter: blur(20px) saturate(1.8);
+            -webkit-backdrop-filter: blur(20px) saturate(1.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
             z-index: 1000;
-            padding: 1.5rem 0;
+            padding: 0.8rem 1.5rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .navbar.scrolled {
+            top: 10px;
+            padding: 0.6rem 1.5rem;
+            background: rgba(5, 5, 5, 0.85);
+            border-color: rgba(255, 140, 0, 0.15);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 140, 0, 0.05);
         }
 
         .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #fff;
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            position: relative;
         }
 
-        .logo i {
-            color: var(--accent-fire);
+        .logo-monogram {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent-fire), var(--accent-gold));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #000;
+            letter-spacing: -1px;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .logo-monogram::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: monogramShine 4s linear infinite;
+        }
+
+        @keyframes monogramShine {
+            to { transform: rotate(360deg); }
+        }
+
+        .logo:hover .logo-monogram {
+            transform: scale(1.1) rotate(-5deg);
+            box-shadow: 0 0 20px rgba(255, 140, 0, 0.5);
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.15;
+        }
+
+        .logo-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+
+        .logo-title {
+            font-size: 0.65rem;
+            font-weight: 400;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.8;
         }
 
         .nav-links {
             display: flex;
-            gap: 2.5rem;
+            gap: 0.4rem;
             list-style: none;
+            align-items: center;
         }
 
         .nav-links a {
-            color: #ccc;
+            color: rgba(255, 255, 255, 0.6);
             text-decoration: none;
-            font-weight: 400;
-            transition: 0.3s;
-            font-size: 0.9rem;
+            font-weight: 500;
+            font-size: 0.8rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%) scaleX(0);
+            width: 20px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-fire), var(--accent-gold));
+            border-radius: 2px;
+            transition: transform 0.3s ease;
         }
 
         .nav-links a:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .nav-links a:hover::after {
+            transform: translateX(-50%) scaleX(1);
+        }
+
+        .nav-links a.active {
             color: var(--accent-gold);
-            text-shadow: 0 0 10px var(--accent-fire);
+            background: rgba(255, 140, 0, 0.08);
+        }
+
+        .nav-links a.active::after {
+            transform: translateX(-50%) scaleX(1);
         }
 
         .hamburger {
             display: none;
+            background: none;
+            border: none;
             color: #fff;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hamburger:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--accent-gold);
+        }
+
+        /* Mobile nav drawer */
+        .nav-links.mobile-open {
+            display: flex !important;
+            flex-direction: column;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 12px;
+            gap: 4px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+            animation: navSlideDown 0.3s ease;
+        }
+
+        @keyframes navSlideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .nav-links.mobile-open a {
+            padding: 12px 16px;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        .nav-links.mobile-open a:hover {
+            background: rgba(255, 140, 0, 0.1);
         }
 
         .hero {
@@ -536,7 +682,18 @@
         }
 
         @media (max-width: 768px) {
+            .navbar {
+                width: calc(100% - 24px);
+                top: 10px;
+                padding: 0.7rem 1rem;
+                border-radius: 14px;
+            }
+
             .nav-links {
+                display: none;
+            }
+
+            .logo-text {
                 display: none;
             }
 
@@ -545,7 +702,7 @@
             }
 
             .hamburger {
-                display: block;
+                display: flex;
             }
 
             #typewriter {
@@ -575,19 +732,25 @@
     <div id="canvas-container"></div>
     <canvas id="space-canvas"></canvas>
 
-    <nav class="navbar">
+    <nav class="navbar" id="navbar">
         <div class="nav-container">
-            <a href="#home" class="logo"><i class="fas fa-meteor"></i> Ch Aarush Udbhav</a>
-            <ul class="nav-links">
+            <a href="#home" class="logo">
+                <div class="logo-monogram">AU</div>
+                <div class="logo-text">
+                    <span class="logo-name">Aarush Udbhav</span>
+                    <span class="logo-title">AI & ML Engineer</span>
+                </div>
+            </a>
+            <ul class="nav-links" id="navLinks">
                 <li><a href="#home">Home</a></li>
                 <li><a href="#about">About</a></li>
                 <li><a href="#experience">Experience</a></li>
                 <li><a href="#projects">Projects</a></li>
                 <li><a href="#skills">Skills</a></li>
-                <li><a href="#certifications">Certifications</a></li>
+                <li><a href="#certifications">Certs</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
-            <div class="hamburger"><i class="fas fa-bars"></i></div>
+            <button class="hamburger" id="hamburgerBtn" aria-label="Menu"><i class="fas fa-bars"></i></button>
         </div>
     </nav>
 
@@ -1192,16 +1355,44 @@
         cls.onclick = () => modal.classList.remove('visible');
         modal.onclick = e => { if (e.target === modal) modal.classList.remove('visible'); };
 
-        const burger = document.querySelector('.hamburger');
-        const nav = document.querySelector('.nav-links');
-        burger.onclick = () => {
-            if (nav.style.display === 'flex') nav.style.display = 'none';
-            else {
-                nav.style.display = 'flex'; nav.style.flexDirection = 'column';
-                nav.style.position = 'absolute'; nav.style.top = '70px'; nav.style.right = '0';
-                nav.style.background = 'rgba(0,0,0,0.95)'; nav.style.width = '100%'; nav.style.padding = '20px';
-            }
+        // --- NAVBAR SCROLL & MOBILE TOGGLE ---
+        const navbarEl = document.getElementById('navbar');
+        const navLinksEl = document.getElementById('navLinks');
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+
+        window.addEventListener('scroll', () => {
+            navbarEl.classList.toggle('scrolled', window.scrollY > 50);
+        });
+
+        hamburgerBtn.onclick = () => {
+            navLinksEl.classList.toggle('mobile-open');
+            const icon = hamburgerBtn.querySelector('i');
+            icon.className = navLinksEl.classList.contains('mobile-open') ? 'fas fa-times' : 'fas fa-bars';
         };
+
+        // Close mobile nav when a link is clicked
+        navLinksEl.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinksEl.classList.remove('mobile-open');
+                hamburgerBtn.querySelector('i').className = 'fas fa-bars';
+            });
+        });
+
+        // Active link highlighting on scroll
+        const sections = document.querySelectorAll('section[id]');
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY + 120;
+            sections.forEach(sec => {
+                const top = sec.offsetTop;
+                const height = sec.offsetHeight;
+                const id = sec.getAttribute('id');
+                const link = navLinksEl.querySelector(`a[href="#${id}"]`);
+                if (link) {
+                    if (scrollY >= top && scrollY < top + height) link.classList.add('active');
+                    else link.classList.remove('active');
+                }
+            });
+        });
 
         const obs = new IntersectionObserver(e => e.forEach(x => { if (x.isIntersecting) x.target.classList.add('visible'); }));
         document.querySelectorAll('.fade-in').forEach(e => obs.observe(e));

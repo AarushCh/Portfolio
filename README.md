@@ -58,28 +58,30 @@ A project entry:
 
 ## Images
 
-| Path | Purpose |
-|---|---|
-| `images/thumbs/` | 720px certificate thumbnails for the cards, lazy-loaded |
-| `images/full-*.jpg` | 1600px scans for the lightbox |
-| `images/cert-*` | Untouched originals, kept as source, not loaded by the page |
-| `images/favicon-64.png` | 64px favicon |
+Every certificate needs two derived files, both built from the original scan.
+The page never loads the originals.
+
+| Path | Purpose | Size |
+|---|---|---|
+| `images/thumbs/cert-*.jpg` | card thumbnail, lazy-loaded | 720px wide, quality 76 |
+| `images/full-cert-*.jpg` | lightbox image | 1600px wide, quality 82 |
+| `images/cert-*` | original scan, source only | untouched |
+| `images/thumbs/profile.jpg` | About portrait | 640px wide |
+| `images/favicon-64.png` | favicon | 64x64 |
 
 ### Adding a certificate
 
-1. Drop the original into `images/` as `cert-<slug>.jpg`.
-2. Regenerate derived images. Safe to re-run, it rebuilds everything:
-
-   ```powershell
-   powershell -File tools/optimize-images.ps1
-   ```
-
+1. Save the original into `images/` as `cert-<slug>.jpg`.
+2. Resize it twice with any image editor, keeping the aspect ratio:
+   - 720px wide to `images/thumbs/cert-<slug>.jpg`
+   - 1600px wide to `images/full-cert-<slug>.jpg`
 3. Add an entry to `CERTS` with `file: "cert-<slug>"`, `name`, `org`, `year`.
 4. Bump `data-count` on the Certifications stat block.
 
-If an original is stored rotated, add its filename to `$rotateList` in the script.
-`cert-sih-2023` is already in there. The nine originals total around 13 MB; the
-derived thumbnails the page actually loads come to about 500 KB.
+Rotate the scan upright before resizing if it was saved sideways; `cert-sih-2023`
+needed that. Nine originals come to about 13 MB, while the thumbnails the page
+actually loads total roughly 500 KB, so it is worth resizing rather than pointing
+the cards at full-size scans.
 
 ## Things that will bite again
 

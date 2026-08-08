@@ -56,14 +56,20 @@ Get-ChildItem $root -File | Where-Object { $_.Name -like 'cert-*' } | ForEach-Ob
     Write-Output "$($_.Name),$oKB,$tKB,$($d.W)x$($d.H)"
 }
 
-$src = [System.Drawing.Image]::FromFile((Join-Path $root "favicon.png"))
-$bmp = New-Object System.Drawing.Bitmap(64, 64)
-$g = [System.Drawing.Graphics]::FromImage($bmp)
-$g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
-$g.DrawImage($src, 0, 0, 64, 64)
-$bmp.Save((Join-Path $root "favicon-64.png"), [System.Drawing.Imaging.ImageFormat]::Png)
-$g.Dispose(); $bmp.Dispose(); $src.Dispose()
-Write-Output "favicon.png,-,$([math]::Round((Get-Item (Join-Path $root 'favicon-64.png')).Length/1KB)),64x64"
+$faviconSrc = Join-Path $root "favicon.png"
+if (Test-Path $faviconSrc) {
+    $src = [System.Drawing.Image]::FromFile($faviconSrc)
+    $bmp = New-Object System.Drawing.Bitmap(64, 64)
+    $g = [System.Drawing.Graphics]::FromImage($bmp)
+    $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+    $g.DrawImage($src, 0, 0, 64, 64)
+    $bmp.Save((Join-Path $root "favicon-64.png"), [System.Drawing.Imaging.ImageFormat]::Png)
+    $g.Dispose(); $bmp.Dispose(); $src.Dispose()
+    Write-Output "favicon.png,-,$([math]::Round((Get-Item (Join-Path $root 'favicon-64.png')).Length/1KB)),64x64"
+}
 
-$p = Resize-Image (Join-Path $root "profile.jpg") (Join-Path $thumbs "profile.jpg") 640 82 $false
-Write-Output "profile.jpg,-,$([math]::Round((Get-Item (Join-Path $thumbs 'profile.jpg')).Length/1KB)),$($p.W)x$($p.H)"
+$profileSrc = Join-Path $root "profile.jpg"
+if (Test-Path $profileSrc) {
+    $p = Resize-Image $profileSrc (Join-Path $thumbs "profile.jpg") 640 82 $false
+    Write-Output "profile.jpg,-,$([math]::Round((Get-Item (Join-Path $thumbs 'profile.jpg')).Length/1KB)),$($p.W)x$($p.H)"
+}
